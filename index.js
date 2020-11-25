@@ -225,13 +225,15 @@
   };
 
   // 哪个结果获得的快，就返回那个结果
-  Promise.race = function race(all) {
-    return new Promise((resolve, reject) => {
-      all.map((promise) => {
-        promise.then((value) => {
-          resolve(value);
-        });
-      });
+  Promise.race = function race(arr) {
+    return new Promise(function (resolve, reject) {
+      for (let i = 0; i < arr.length; i++) {
+        (function (i) {
+          arr[i].then((value) => {
+            resolve(value);
+          });
+        })(i);
+      }
     });
   };
 
@@ -256,3 +258,26 @@ p1.then(
 );
 
 console.log(333);
+
+const promise1 = Promise.resolve(3);
+const promise2 = 42;
+const promise3 = new Promise((resolve, reject) => {
+  setTimeout(resolve, 100, "foo");
+});
+
+Promise.all([promise1, promise2, promise3]).then((values) => {
+  console.log(values);
+});
+
+const promise4 = new Promise((resolve, reject) => {
+  setTimeout(resolve, 500, "one");
+});
+
+const promise5 = new Promise((resolve, reject) => {
+  setTimeout(resolve, 100, "two");
+});
+
+Promise.race([promise4, promise5]).then((value) => {
+  console.log(value);
+  // Both resolve, but promise2 is faster
+});
